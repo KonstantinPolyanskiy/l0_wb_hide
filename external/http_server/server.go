@@ -14,7 +14,7 @@ type Server struct {
 func New(handler http.Handler, opt ...Option) *Server {
 	const (
 		defaultReadWriteTimeout = 10 * time.Second
-		defaultAddr             = "8080"
+		defaultAddr             = ":8080"
 		defaultIdleTimeout      = 30 * time.Second
 	)
 

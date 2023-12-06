@@ -3,18 +3,27 @@ package order
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"l0_wb_hide/internal/models"
 	"l0_wb_hide/internal/usecase"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Order struct {
 	service usecase.Order
+	Recipienter
 }
 
-func NewHandler(service usecase.Order) Order {
+type Recipienter interface {
+	TakeOrder() (models.Order, error)
+}
+
+func NewHandler(service usecase.Order, rec Recipienter) Order {
 	return Order{
-		service: service,
+		service:     service,
+		Recipienter: rec,
 	}
 }
 
@@ -42,4 +51,47 @@ func (h Order) Get() http.HandlerFunc {
 			"result": order,
 		})
 	}
+}
+func (h Order) ProcessMessage() {
+	orderChan := make(chan models.Order)
+	errChan := make(chan error)
+
+	go func() {
+		for {
+			order, err := h.TakeOrder()
+			if err != nil {
+				writeToErrChan(errChan, err)
+				return
+			} else {
+				writeToOrderChan(orderChan, order)
+				log.Println("Записано")
+			}
+
+			// Проверяем каждые 500 микросекунд, есть ли непрочитанный Order
+			time.Sleep(500 * time.Microsecond)
+		}
+	}()
+
+	go func() {
+		for {
+			select {
+			case order := <-orderChan:
+				err := h.service.Save(order)
+				if err != nil {
+					writeToErrChan(errChan, err)
+				}
+			case err := <-errChan:
+				log.Printf("Ошибка в обработке ордера со стрима - %s\n", err)
+			}
+		}
+	}()
+
+	time.Sleep(500 * time.Microsecond)
+}
+
+func writeToOrderChan(orderChan chan<- models.Order, order models.Order) {
+	orderChan <- order
+}
+func writeToErrChan(errChan chan<- error, err error) {
+	errChan <- err
 }

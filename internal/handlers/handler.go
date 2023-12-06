@@ -2,26 +2,28 @@ package handlers
 
 import (
 	"github.com/go-chi/chi/v5"
+	"l0_wb_hide/internal/broker/stream"
 	"l0_wb_hide/internal/handlers/order"
 	"l0_wb_hide/internal/usecase"
 )
 
 type Handler struct {
-	order order.Order
+	order  order.Order
+	stream stream.Stream
 }
 
-func New(service usecase.Service) Handler {
+func New(service usecase.Service, stream stream.Stream) Handler {
 	return Handler{
-		order: order.NewHandler(service.Order),
+		order: order.NewHandler(service.Order, stream),
 	}
 }
 
 func (h Handler) Init() *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Route("/order", func(r chi.Router) {
-		r.Get("{id}", h.order.Get())
-	})
+	h.order.ProcessMessage()
+
+	r.Get("/order?id={id}", h.order.Get())
 
 	return r
 }

@@ -42,3 +42,15 @@ func (o Order) Get(id int) (models.Order, error) {
 
 	return orderResult, nil
 }
+func (o Order) Save(savedOrder models.Order) error {
+	id, err := o.repository.Save(savedOrder)
+	if err != nil {
+		return err
+	}
+	log.Println(savedOrder)
+	log.Printf("запись с id %d сохранена", id)
+
+	o.cache.Add(id, savedOrder)
+
+	return nil
+}

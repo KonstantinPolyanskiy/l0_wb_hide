@@ -6,6 +6,7 @@ import (
 	_ "github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
 	"l0_wb_hide/internal/models"
+	"log"
 )
 
 type Stream struct {
@@ -34,6 +35,10 @@ func New(clusterName, clientName, chanName, durableName string) (Stream, error) 
 	}, nil
 }
 
+func (s Stream) Close() {
+	s.stan.Close()
+	s.nats.Close()
+}
 func (s Stream) PublishOrder(order models.Order) error {
 	data, err := json.Marshal(order)
 	if err != nil {
@@ -46,4 +51,26 @@ func (s Stream) PublishOrder(order models.Order) error {
 	}
 
 	return nil
+}
+
+func (s Stream) TakeOrder() (models.Order, error) {
+	var order models.Order
+	sub, err := s.stan.Subscribe(s.chanName, func(msg *stan.Msg) {
+		err := json.Unmarshal(msg.Data, &order)
+		if err != nil {
+			log.Println(err)
+		}
+
+		err = msg.Ack()
+		if err != nil {
+			log.Println(err)
+		}
+	}, stan.DurableName(s.durableName))
+	if err != nil {
+		return models.Order{}, err
+	}
+
+	defer sub.Close()
+
+	return order, nil
 }

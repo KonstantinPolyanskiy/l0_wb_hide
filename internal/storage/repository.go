@@ -8,6 +8,7 @@ import (
 
 type Order interface {
 	Get(id int) (models.Order, error)
+	Save(order models.Order) (int, error)
 }
 
 type Repository struct {
