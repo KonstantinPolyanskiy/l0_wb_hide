@@ -26,7 +26,7 @@ type Order struct {
 type Delivery struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`
-	Zip     int    `json:"zip"`
+	Zip     string `json:"zip"`
 	City    string `json:"city"`
 	Address string `json:"address"`
 	Region  string `json:"region"`
@@ -34,7 +34,7 @@ type Delivery struct {
 }
 type Payment struct {
 	Transaction  string `json:"transaction"`
-	RequestId    int    `json:"request_id"`
+	RequestId    string `json:"request_id"`
 	Currency     string `json:"currency"`
 	Provider     string `json:"provider"`
 	Amount       int    `json:"amount"`
@@ -48,9 +48,11 @@ type Payment struct {
 type Item struct {
 	ChartId     int    `json:"chart_id"`
 	TrackNumber string `json:"track_number"`
+	Rid         string `json:"rid"`
 	Price       int    `json:"price"`
 	Name        string `json:"name"`
 	Sale        int    `json:"sale"`
+	Size        string `json:"size"`
 	TotalPrice  int    `json:"total_price"`
 	NmId        int    `json:"nmId"`
 	Brand       string `json:"brand"`

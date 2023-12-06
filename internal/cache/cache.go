@@ -23,8 +23,6 @@ type Item struct {
 type Option func(cache *Cache)
 
 func New(opts ...Option) *Cache {
-	const defaultCapacity = 50
-
 	cache := &Cache{
 		Capacity: 0,
 		mu:       sync.RWMutex{},
