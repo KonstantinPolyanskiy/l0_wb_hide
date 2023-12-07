@@ -54,23 +54,24 @@ func (s Stream) PublishOrder(order models.Order) error {
 }
 
 func (s Stream) TakeOrder() (models.Order, error) {
-	var order models.Order
+	orderChan := make(chan models.Order, 1)
+
 	sub, err := s.stan.Subscribe(s.chanName, func(msg *stan.Msg) {
+		var order models.Order
+
 		err := json.Unmarshal(msg.Data, &order)
 		if err != nil {
 			log.Println(err)
+		} else {
+			orderChan <- order
 		}
 
-		err = msg.Ack()
-		if err != nil {
-			log.Println(err)
-		}
 	}, stan.DurableName(s.durableName))
 	if err != nil {
 		return models.Order{}, err
 	}
 
 	defer sub.Close()
-
+	order := <-orderChan
 	return order, nil
 }

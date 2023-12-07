@@ -47,7 +47,6 @@ func (o Order) Save(savedOrder models.Order) error {
 	if err != nil {
 		return err
 	}
-	log.Println(savedOrder)
 	log.Printf("запись с id %d сохранена", id)
 
 	o.cache.Add(id, savedOrder)

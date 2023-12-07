@@ -5,6 +5,7 @@ import (
 	"l0_wb_hide/internal/broker/stream"
 	"l0_wb_hide/internal/models"
 	"log"
+	"time"
 )
 
 const countMsg = 100
@@ -28,8 +29,12 @@ func main() {
 			log.Printf("Ошибка в отправке сообщения %s в %s\n", err, op)
 			continue
 		}
-		log.Printf("Сообщение номер %d отправлено сообщение %+v", i, o)
+		log.Printf("Сообщение номер %d отправлено\n", i)
+
+		time.Sleep(2 * time.Second)
 	}
+
+	defer str.Close()
 }
 
 func makeOrder() models.Order {

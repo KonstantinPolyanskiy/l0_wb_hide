@@ -2,6 +2,7 @@ package cache
 
 import (
 	"errors"
+	"log"
 	"sync"
 	"time"
 )
@@ -24,7 +25,7 @@ type Option func(cache *Cache)
 
 func New(opts ...Option) *Cache {
 	cache := &Cache{
-		Capacity: 0,
+		Capacity: 10,
 		mu:       sync.RWMutex{},
 		Storage:  make(map[int]Item),
 	}
@@ -52,6 +53,7 @@ func (c *Cache) Add(key int, value interface{}) {
 	}
 
 	c.Storage[key] = item
+	log.Println(c.Storage)
 }
 func (c *Cache) Get(key int) (Item, error) {
 	c.mu.RLock()
@@ -66,7 +68,7 @@ func (c *Cache) Get(key int) (Item, error) {
 }
 
 // WithCapacity задает максимальную вместимость хранилища.
-// По умолчанию - 50 элементов.
+// По умолчанию - 10 элементов.
 func WithCapacity(cap int) Option {
 	return func(c *Cache) {
 		c.Capacity = cap
